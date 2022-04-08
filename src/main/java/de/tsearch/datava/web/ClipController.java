@@ -1,6 +1,8 @@
 package de.tsearch.datava.web;
 
+import de.tsearch.datava.database.postgres.entity.Broadcaster;
 import de.tsearch.datava.database.postgres.entity.Clip;
+import de.tsearch.datava.database.postgres.repository.BroadcasterRepository;
 import de.tsearch.datava.database.postgres.repository.ClipRepository;
 import de.tsearch.datava.web.entity.WebClip;
 import de.tsearch.datava.web.entity.WebPage;
@@ -10,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -18,9 +21,11 @@ import java.util.stream.Collectors;
 public class ClipController {
 
     private final ClipRepository clipRepository;
+    private final BroadcasterRepository broadcasterRepository;
 
-    public ClipController(ClipRepository clipRepository) {
+    public ClipController(ClipRepository clipRepository, BroadcasterRepository broadcasterRepository) {
         this.clipRepository = clipRepository;
+        this.broadcasterRepository = broadcasterRepository;
     }
 
     @GetMapping("search")
@@ -30,14 +35,20 @@ public class ClipController {
             @RequestParam(defaultValue = "") String q,
             @RequestParam(name = "broadcaster") String broadcasterName
     ) {
-        Page<Clip> clipPage = clipRepository.findAllByTitleContainingIgnoreCaseAndBroadcasterDisplayNameIsIgnoreCase(q, broadcasterName, PageRequest.of(pageNumber, pageSize, Sort.by("viewCount").descending()));
-        WebPage<WebClip> page = new WebPage<>();
-        page.setContent(clipPage.getContent().stream().map(WebClip::new).collect(Collectors.toList()));
-        page.setCurrentPage(clipPage.getNumber());
-        page.setCurrentElements(clipPage.getNumberOfElements());
-        page.setTotalPages(clipPage.getTotalPages());
-        page.setTotalElements(clipPage.getTotalElements());
+        Optional<Broadcaster> broadcasterOptional = broadcasterRepository.findByDisplayNameIgnoreCase(broadcasterName);
 
-        return ResponseEntity.ok(page);
+        if (broadcasterOptional.isPresent()) {
+            Page<Clip> clipPage = clipRepository.findAllByTitleContainingIgnoreCaseAndBroadcaster(q, broadcasterOptional.get(), PageRequest.of(pageNumber, pageSize, Sort.by("viewCount").descending()));
+            WebPage<WebClip> page = new WebPage<>();
+            page.setContent(clipPage.getContent().stream().map(WebClip::new).collect(Collectors.toList()));
+            page.setCurrentPage(clipPage.getNumber());
+            page.setCurrentElements(clipPage.getNumberOfElements());
+            page.setTotalPages(clipPage.getTotalPages());
+            page.setTotalElements(clipPage.getTotalElements());
+
+            return ResponseEntity.ok(page);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
