@@ -8,4 +8,5 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface ClipRepository extends CrudRepository<Clip, String> {
     Page<Clip> findAllByTitleContainingIgnoreCaseAndBroadcaster(String title, Broadcaster broadcaster, Pageable pageable);
+    Page<Clip> findAllByBroadcaster(Broadcaster broadcaster, Pageable pageable);
 }

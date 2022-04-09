@@ -38,7 +38,13 @@ public class ClipController {
         Optional<Broadcaster> broadcasterOptional = broadcasterRepository.findByDisplayNameIgnoreCase(broadcasterName);
 
         if (broadcasterOptional.isPresent()) {
-            Page<Clip> clipPage = clipRepository.findAllByTitleContainingIgnoreCaseAndBroadcaster(q, broadcasterOptional.get(), PageRequest.of(pageNumber, pageSize, Sort.by("viewCount").descending()));
+            Page<Clip> clipPage;
+            PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by("viewCount").descending());
+            if (q.length() == 0) {
+                clipPage = clipRepository.findAllByBroadcaster(broadcasterOptional.get(), pageRequest);
+            } else {
+                clipPage = clipRepository.findAllByTitleContainingIgnoreCaseAndBroadcaster(q, broadcasterOptional.get(), pageRequest);
+            }
             WebPage<WebClip> page = new WebPage<>();
             page.setContent(clipPage.getContent().stream().map(WebClip::new).collect(Collectors.toList()));
             page.setCurrentPage(clipPage.getNumber());
