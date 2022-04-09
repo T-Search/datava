@@ -6,6 +6,7 @@ import de.tsearch.datava.database.postgres.repository.BroadcasterRepository;
 import de.tsearch.datava.database.postgres.repository.ClipRepository;
 import de.tsearch.datava.web.entity.WebClip;
 import de.tsearch.datava.web.entity.WebPage;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -28,6 +29,7 @@ public class ClipController {
         this.broadcasterRepository = broadcasterRepository;
     }
 
+    @Cacheable("clipSearch")
     @GetMapping("search")
     public ResponseEntity<WebPage<WebClip>> searchClip(
             @RequestParam(defaultValue = "0") int pageNumber,
