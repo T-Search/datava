@@ -10,10 +10,12 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @RestController
@@ -54,7 +56,8 @@ public class ClipController {
             page.setTotalPages(clipPage.getTotalPages());
             page.setTotalElements(clipPage.getTotalElements());
 
-            return ResponseEntity.ok(page);
+            CacheControl cacheControl = CacheControl.maxAge(60, TimeUnit.SECONDS).mustRevalidate();
+            return ResponseEntity.ok().cacheControl(cacheControl).build();
         } else {
             return ResponseEntity.notFound().build();
         }
