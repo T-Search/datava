@@ -1,12 +1,9 @@
 package de.tsearch.datava.web;
 
 import de.tsearch.datava.database.postgres.entity.Broadcaster;
-import de.tsearch.datava.database.postgres.entity.Clip;
 import de.tsearch.datava.database.postgres.entity.Highlight;
 import de.tsearch.datava.database.postgres.repository.BroadcasterRepository;
-import de.tsearch.datava.database.postgres.repository.ClipRepository;
 import de.tsearch.datava.database.postgres.repository.HighlightRepository;
-import de.tsearch.datava.web.entity.WebClip;
 import de.tsearch.datava.web.entity.WebHighlight;
 import de.tsearch.datava.web.entity.WebPage;
 import org.springframework.cache.annotation.Cacheable;
