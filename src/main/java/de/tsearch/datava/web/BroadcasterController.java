@@ -20,9 +20,9 @@ public class BroadcasterController {
         this.broadcasterRepository = broadcasterRepository;
     }
 
-    @Cacheable("broadcasterNames")
-    @GetMapping("all")
-    public List<String> getAllBroadcaster() {
-        return StreamSupport.stream(broadcasterRepository.findAll().spliterator(), false).map(Broadcaster::getDisplayName).filter(Objects::nonNull).toList();
+    @Cacheable("broadcasterAutocomplete")
+    @GetMapping("autocomplete")
+    public List<String> getAutocompleteBroadcaster() {
+        return StreamSupport.stream(broadcasterRepository.findByVipIsTrueOrTwitchAuthorisedIsTrue().spliterator(), false).map(Broadcaster::getDisplayName).filter(Objects::nonNull).toList();
     }
 }
