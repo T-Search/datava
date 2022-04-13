@@ -21,8 +21,8 @@ public class BroadcasterController {
     }
 
     @Cacheable("broadcasterNames")
-    @GetMapping("all")
-    public List<String> getAllBroadcaster() {
-        return StreamSupport.stream(broadcasterRepository.findAll().spliterator(), false).map(Broadcaster::getDisplayName).filter(Objects::nonNull).toList();
+    @GetMapping("autocomplete")
+    public List<String> getAutocompleteBroadcaster() {
+        return StreamSupport.stream(broadcasterRepository.findByVipIsTrueOrTwitchAuthorisedIsTrue().spliterator(), false).map(Broadcaster::getDisplayName).filter(Objects::nonNull).toList();
     }
 }
