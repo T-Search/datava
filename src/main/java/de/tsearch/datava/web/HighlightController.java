@@ -9,7 +9,6 @@ import de.tsearch.datava.web.entity.WebPage;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,10 +20,13 @@ import java.util.stream.Collectors;
 @CrossOrigin(methods = {RequestMethod.POST, RequestMethod.PUT, RequestMethod.GET, RequestMethod.DELETE}, origins = {"*"})
 public class HighlightController {
 
+    private final ControllerUtil controllerUtil;
+
     private final HighlightRepository highlightRepository;
     private final BroadcasterRepository broadcasterRepository;
 
-    public HighlightController(HighlightRepository highlightRepository, BroadcasterRepository broadcasterRepository) {
+    public HighlightController(ControllerUtil controllerUtil, HighlightRepository highlightRepository, BroadcasterRepository broadcasterRepository) {
+        this.controllerUtil = controllerUtil;
         this.highlightRepository = highlightRepository;
         this.broadcasterRepository = broadcasterRepository;
     }
@@ -46,24 +48,7 @@ public class HighlightController {
         if (broadcasterOptional.isPresent()) {
             Page<Highlight> highlightPage;
 
-            //Build sort
-            Sort sort;
-            try {
-                switch (sortProperty) {
-                    case "date":
-                        sort = setOrder(Sort.by("createdAt"), sortOrder);
-                        break;
-                    case "views":
-                        sort = setOrder(Sort.by("viewCount"), sortOrder).and(Sort.by("createdAt").descending());
-                        break;
-                    default:
-                        return ResponseEntity.badRequest().build();
-                }
-            } catch (RuntimeException e) { //Sort order not valid!
-                return ResponseEntity.badRequest().build();
-            }
-
-            PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, sort);
+            PageRequest pageRequest = controllerUtil.buildPageRequest(pageNumber, pageSize, sortProperty, sortOrder);
 
             if (q.length() == 0) {
                 if (">=".equals(viewOperator)) {
@@ -92,16 +77,6 @@ public class HighlightController {
             return ResponseEntity.ok(page);
         } else {
             return ResponseEntity.notFound().build();
-        }
-    }
-
-    private Sort setOrder(Sort sort, String order) {
-        if ("asc".equalsIgnoreCase(order)) {
-            return sort.ascending();
-        } else if ("desc".equalsIgnoreCase(order)) {
-            return sort.descending();
-        } else {
-            throw new RuntimeException("Sort order must be asc or desc");
         }
     }
 }
