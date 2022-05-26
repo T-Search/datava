@@ -35,17 +35,52 @@ public class HighlightController {
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(defaultValue = "") String q,
-            @RequestParam(name = "broadcaster") String broadcasterName
+            @RequestParam(name = "broadcaster") String broadcasterName,
+            @RequestParam(name = "sortOrder", defaultValue = "desc") String sortOrder,
+            @RequestParam(name = "sortProperty", defaultValue = "views") String sortProperty,
+            @RequestParam(name = "views", defaultValue = "0") long views,
+            @RequestParam(name = "viewsOperator", defaultValue = ">=") String viewOperator
     ) {
         Optional<Broadcaster> broadcasterOptional = broadcasterRepository.findByDisplayNameIgnoreCase(broadcasterName);
 
         if (broadcasterOptional.isPresent()) {
             Page<Highlight> highlightPage;
-            PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by("viewCount").descending());
+
+            //Build sort
+            Sort sort;
+            try {
+                switch (sortProperty) {
+                    case "date":
+                        sort = setOrder(Sort.by("createdAt"), sortOrder);
+                        break;
+                    case "views":
+                        sort = setOrder(Sort.by("viewCount"), sortOrder).and(Sort.by("createdAt").descending());
+                        break;
+                    default:
+                        return ResponseEntity.badRequest().build();
+                }
+            } catch (RuntimeException e) { //Sort order not valid!
+                return ResponseEntity.badRequest().build();
+            }
+
+            PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, sort);
+
             if (q.length() == 0) {
-                highlightPage = highlightRepository.findAllByBroadcaster(broadcasterOptional.get(), pageRequest);
+                if (">=".equals(viewOperator)) {
+                    highlightPage = highlightRepository.findAllByBroadcasterAndViewCountGreaterThanEqual(broadcasterOptional.get(), views, pageRequest);
+                } else if ("<=".equals(viewOperator)) {
+                    highlightPage = highlightRepository.findAllByBroadcasterAndViewCountLessThanEqual(broadcasterOptional.get(), views, pageRequest);
+                } else {
+                    return ResponseEntity.badRequest().build();
+                }
             } else {
-                highlightPage = highlightRepository.findAllByTitleContainingIgnoreCaseAndBroadcaster(q, broadcasterOptional.get(), pageRequest);
+                if (">=".equals(viewOperator)) {
+                    highlightPage = highlightRepository.findAllByTitleContainingIgnoreCaseAndBroadcasterAndViewCountGreaterThanEqual(q, broadcasterOptional.get(), views, pageRequest);
+                } else if ("<=".equals(viewOperator)) {
+                    highlightPage = highlightRepository.findAllByTitleContainingIgnoreCaseAndBroadcasterAndViewCountLessThanEqual(q, broadcasterOptional.get(), views, pageRequest);
+                } else {
+                    return ResponseEntity.badRequest().build();
+                }
             }
             WebPage<WebHighlight> page = new WebPage<>();
             page.setContent(highlightPage.getContent().stream().map(WebHighlight::new).collect(Collectors.toList()));
@@ -57,6 +92,16 @@ public class HighlightController {
             return ResponseEntity.ok(page);
         } else {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    private Sort setOrder(Sort sort, String order) {
+        if ("asc".equalsIgnoreCase(order)) {
+            return sort.ascending();
+        } else if ("desc".equalsIgnoreCase(order)) {
+            return sort.descending();
+        } else {
+            throw new RuntimeException("Sort order must be asc or desc");
         }
     }
 }
