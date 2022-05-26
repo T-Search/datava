@@ -39,7 +39,9 @@ public class ClipController {
             @RequestParam(name = "sortOrder", defaultValue = "desc") String sortOrder,
             @RequestParam(name = "sortProperty", defaultValue = "views") String sortProperty,
             @RequestParam(name = "game", defaultValue = "") String game,
-            @RequestParam(name = "creator", defaultValue = "") String creator
+            @RequestParam(name = "creator", defaultValue = "") String creator,
+            @RequestParam(name = "views", defaultValue = "0") long views,
+            @RequestParam(name = "viewsOperator", defaultValue = ">=") String viewOperator
     ) {
         Optional<Broadcaster> broadcasterOptional = broadcasterRepository.findByDisplayNameIgnoreCase(broadcasterName);
 
@@ -65,9 +67,21 @@ public class ClipController {
 
             PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, sort);
             if (q.length() == 0) {
-                clipPage = clipRepository.findAllByBroadcasterAndGameContainingIgnoreCaseAndCreatorNameContainingIgnoreCase(broadcasterOptional.get(), game, creator, pageRequest);
+                if (">=".equals(viewOperator)) {
+                    clipPage = clipRepository.findAllByBroadcasterAndGameContainingIgnoreCaseAndCreatorNameContainingIgnoreCaseAndViewCountGreaterThanEqual(broadcasterOptional.get(), game, creator, views, pageRequest);
+                } else if ("<=".equals(viewOperator)) {
+                    clipPage = clipRepository.findAllByBroadcasterAndGameContainingIgnoreCaseAndCreatorNameContainingIgnoreCaseAndViewCountLessThanEqual(broadcasterOptional.get(), game, creator, views, pageRequest);
+                } else {
+                    return ResponseEntity.badRequest().build();
+                }
             } else {
-                clipPage = clipRepository.findAllByTitleContainingIgnoreCaseAndBroadcasterAndGameContainingIgnoreCaseAndCreatorNameContainingIgnoreCase(q, broadcasterOptional.get(), game, creator, pageRequest);
+                if (">=".equals(viewOperator)) {
+                    clipPage = clipRepository.findAllByTitleContainingIgnoreCaseAndBroadcasterAndGameContainingIgnoreCaseAndCreatorNameContainingIgnoreCaseAndViewCountGreaterThanEqual(q, broadcasterOptional.get(), game, creator, views, pageRequest);
+                } else if ("<=".equals(viewOperator)) {
+                    clipPage = clipRepository.findAllByTitleContainingIgnoreCaseAndBroadcasterAndGameContainingIgnoreCaseAndCreatorNameContainingIgnoreCaseAndViewCountLessThanEqual(q, broadcasterOptional.get(), game, creator, views, pageRequest);
+                } else {
+                    return ResponseEntity.badRequest().build();
+                }
             }
             WebPage<WebClip> page = new WebPage<>();
             page.setContent(clipPage.getContent().stream().map(WebClip::new).collect(Collectors.toList()));
