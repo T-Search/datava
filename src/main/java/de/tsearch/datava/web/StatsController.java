@@ -47,18 +47,11 @@ public class StatsController {
         List<YearMonthStatistics> all = clipStatisticRepository.calculateYearMonthStatistics();
         List<String> labels = extractDisplayLabels(all);
 
-        Calendar calendar = Calendar.getInstance();
-        for (YearMonthStatistics yearMonthStatistic : all) {
-            System.out.println("yearMonthStatistic = " + yearMonthStatistic);
-            calendar.setTime(yearMonthStatistic.getYearMonth());
-            labels.add(calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.GERMAN) + " " + calendar.get(Calendar.YEAR));
-        }
-
-        Dataset<Float> allPercentDataset = new Dataset<>("Andere Streamer %", calculateAsPercentage(all.stream().map(YearMonthStatistics::getCount).toList()), "#e15759", false);
+        Dataset<Float> allPercentDataset = new Dataset<>("Andere Streamer %", calculateAsPercentage(all.stream().map(YearMonthStatistics::getCount).toList()), "#e15759", "#e15759", "y1", "line", false);
         Broadcaster gammalunatic = broadcasterRepository.findByDisplayNameIgnoreCase("gammalunatic").get();
         List<YearMonthStatistics> creator = clipStatisticRepository.calculateYearMonthStatistics(gammalunatic);
-        Dataset<Long> creatorDataset = new Dataset<>("Creator", creator.stream().map(YearMonthStatistics::getCount).toList(), "#f28e2b", false);
-        Dataset<Float> creatorPercentDataset = new Dataset<>("Andere Streamer %", calculateAsPercentage(creator.stream().map(YearMonthStatistics::getCount).toList()), "#f28e2b", false);
+        Dataset<Long> creatorDataset = new Dataset<>("Creator", creator.stream().map(YearMonthStatistics::getCount).toList(), "#f28e2b", "#f28e2b", "y", "bar", false);
+        Dataset<Float> creatorPercentDataset = new Dataset<>("Creator %", calculateAsPercentage(creator.stream().map(YearMonthStatistics::getCount).toList()), "#7f4f1e", "#7f4f1e", "y1", "line", false);
 
         Chart yearMonthChart = new Chart(labels, List.of(creatorDataset, creatorPercentDataset, allPercentDataset));
 

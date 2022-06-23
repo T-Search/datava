@@ -6,6 +6,8 @@ import lombok.Data;
 
 import java.util.List;
 
+
+//TODO Split in Line and Bar Dataset
 @Data
 @AllArgsConstructor
 public class Dataset<T> {
@@ -13,5 +15,10 @@ public class Dataset<T> {
     private List<T> data;
     @JsonProperty("backgroundColor")
     private String color;
+    @JsonProperty("borderColor")
+    private String borderColor;
+    @JsonProperty("yAxisID")
+    private String yAxisID;
+    private String type;
     private boolean hidden;
 }
