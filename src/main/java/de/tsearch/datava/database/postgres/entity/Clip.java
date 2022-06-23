@@ -12,6 +12,18 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@NamedNativeQuery(name = "YearMonthStatistics.calculateAll",
+        query = "select TO_CHAR(created_at, 'YYYY-MM') as yearmonth, count(id) as count from clip where created_at > (cast(date_trunc('month', current_date) as date) - interval '6 months') and created_at < date_trunc('month', current_date) group by yearmonth ORDER BY yearmonth",
+        resultSetMapping = "Mapping.YearMonthStatistics")
+@NamedNativeQuery(name = "YearMonthStatistics.calculateBroadcaster",
+        query = "select TO_CHAR(created_at, 'YYYY-MM') as yearmonth, count(id) as count from clip where broadcaster_id = :broadcaster and created_at > (cast(date_trunc('month', current_date) as date) - interval '6 months') and created_at < date_trunc('month', current_date) group by yearmonth ORDER BY yearmonth",
+        resultSetMapping = "Mapping.YearMonthStatistics")
+@SqlResultSetMapping(name = "Mapping.YearMonthStatistics",
+        classes = @ConstructorResult(targetClass = YearMonthStatistics.class,
+                columns = {
+                        @ColumnResult(name = "yearmonth", type = String.class),
+                        @ColumnResult(name = "count", type = Long.class)
+                }))
 public class Clip {
     @Id
     private String id;
