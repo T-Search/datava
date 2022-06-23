@@ -44,12 +44,14 @@ public class StatsController {
 
     @GetMapping("test")
     public ResponseEntity<?> test() throws ParseException {
+        //TODO Add Creator check
         List<YearMonthStatistics> all = clipStatisticRepository.calculateYearMonthStatistics();
         List<String> labels = extractDisplayLabels(all);
 
         Dataset<Float> allPercentDataset = new Dataset<>("Andere Streamer %", calculateAsPercentage(all.stream().map(YearMonthStatistics::getCount).toList()), "#e15759", "#e15759", "y1", "line", false);
         Broadcaster gammalunatic = broadcasterRepository.findByDisplayNameIgnoreCase("gammalunatic").get();
         List<YearMonthStatistics> creator = clipStatisticRepository.calculateYearMonthStatistics(gammalunatic);
+        //TODO Replace Creator with creator name
         Dataset<Long> creatorDataset = new Dataset<>("Creator", creator.stream().map(YearMonthStatistics::getCount).toList(), "#f28e2b", "#f28e2b", "y", "bar", false);
         Dataset<Float> creatorPercentDataset = new Dataset<>("Creator %", calculateAsPercentage(creator.stream().map(YearMonthStatistics::getCount).toList()), "#7f4f1e", "#7f4f1e", "y1", "line", false);
 
