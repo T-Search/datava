@@ -1,11 +1,14 @@
 package de.tsearch.datava.web;
 
+import de.tsearch.datava.database.postgres.data.BoxStatistics;
 import de.tsearch.datava.database.postgres.entity.Broadcaster;
 import de.tsearch.datava.database.postgres.entity.YearMonthStatistics;
 import de.tsearch.datava.database.postgres.repository.BroadcasterRepository;
 import de.tsearch.datava.database.postgres.repository.ClipStatisticRepository;
+import de.tsearch.datava.database.postgres.repository.HighlightRepository;
 import de.tsearch.datava.web.entity.chart.Chart;
 import de.tsearch.datava.web.entity.chart.Dataset;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,24 +22,27 @@ import java.text.ParseException;
 import java.util.*;
 
 @RestController
+@RequiredArgsConstructor
 @CacheConfig(cacheNames = "test")
 @RequestMapping("stats")
 public class StatsController {
 
     private final BroadcasterRepository broadcasterRepository;
     private final ClipStatisticRepository clipStatisticRepository;
+    private final HighlightRepository highlightRepository;
 
-    public StatsController(BroadcasterRepository broadcasterRepository, ClipStatisticRepository clipStatisticRepository) {
-        this.broadcasterRepository = broadcasterRepository;
-        this.clipStatisticRepository = clipStatisticRepository;
-    }
-
-    @GetMapping("full/{creator}")
-    public ResponseEntity<?> fullStatistics(@PathVariable String creator) {
+    @GetMapping("box/{creator}")
+    public ResponseEntity<?> boxStatistics(@PathVariable String creator) {
         Optional<Broadcaster> broadcasterOptional = broadcasterRepository.findByDisplayNameIgnoreCase(creator);
         if (broadcasterOptional.isPresent()) {
             Broadcaster broadcaster = broadcasterOptional.get();
-            return ResponseEntity.ok(String.valueOf(clipStatisticRepository.calculateWeekStatistics(broadcaster)));
+            return ResponseEntity.ok(new BoxStatistics(
+                    highlightRepository.countByBroadcaster(broadcaster),
+                    highlightRepository.countByBroadcasterLast30Days(broadcaster),
+                    clipStatisticRepository.countByBroadcaster(broadcaster),
+                    clipStatisticRepository.countByBroadcasterLast30Days(broadcaster),
+                    clipStatisticRepository.calculateGames(broadcaster).size()
+            ));
         } else {
             return ResponseEntity.notFound().build();
         }
