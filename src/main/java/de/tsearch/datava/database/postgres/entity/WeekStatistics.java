@@ -1,7 +1,9 @@
 package de.tsearch.datava.database.postgres.entity;
 
+import lombok.Getter;
 import lombok.ToString;
 
+@Getter
 @ToString
 public class WeekStatistics {
     private WeekdayEnum weekday;
