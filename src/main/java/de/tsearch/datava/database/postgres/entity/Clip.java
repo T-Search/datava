@@ -1,5 +1,6 @@
 package de.tsearch.datava.database.postgres.entity;
 
+import de.tsearch.datava.database.postgres.data.YearMonthStatistics;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,6 +1,9 @@
 package de.tsearch.datava.database.postgres.repository;
 
 import de.tsearch.datava.database.postgres.data.GameStatistics;
+import de.tsearch.datava.database.postgres.data.HourStatistics;
+import de.tsearch.datava.database.postgres.data.WeekStatistics;
+import de.tsearch.datava.database.postgres.data.YearMonthStatistics;
 import de.tsearch.datava.database.postgres.entity.*;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
@@ -26,19 +29,19 @@ public interface ClipStatisticRepository extends CrudRepository<Clip, String> {
 
 
     @Cacheable
-    @Query("SELECT new de.tsearch.datava.database.postgres.entity.HourStatistics(extract (hour from created_at) as hour, COUNT(c)) FROM Clip c GROUP BY hour ORDER BY hour")
+    @Query("SELECT new de.tsearch.datava.database.postgres.data.HourStatistics(extract (hour from created_at) as hour, COUNT(c)) FROM Clip c GROUP BY hour ORDER BY hour")
     List<HourStatistics> calculateHourStatistics();
 
     @Cacheable(key = "#broadcaster.id")
-    @Query("SELECT new de.tsearch.datava.database.postgres.entity.HourStatistics(extract (hour from created_at) as hour, COUNT(c)) FROM Clip c WHERE c.broadcaster = :broadcaster GROUP BY hour ORDER BY hour")
+    @Query("SELECT new de.tsearch.datava.database.postgres.data.HourStatistics(extract (hour from created_at) as hour, COUNT(c)) FROM Clip c WHERE c.broadcaster = :broadcaster GROUP BY hour ORDER BY hour")
     List<HourStatistics> calculateHourStatistics(Broadcaster broadcaster);
 
     @Cacheable
-    @Query("SELECT new de.tsearch.datava.database.postgres.entity.WeekStatistics(extract (isodow from created_at) as weekday, COUNT(c)) FROM Clip c GROUP BY weekday ORDER BY weekday")
+    @Query("SELECT new de.tsearch.datava.database.postgres.data.WeekStatistics(extract (isodow from created_at) as weekday, COUNT(c)) FROM Clip c GROUP BY weekday ORDER BY weekday")
     List<WeekStatistics> calculateWeekStatistics();
 
     @Cacheable(key = "#broadcaster.id")
-    @Query("SELECT new de.tsearch.datava.database.postgres.entity.WeekStatistics(extract (isodow from created_at) as weekday, COUNT(c)) FROM Clip c WHERE c.broadcaster = :broadcaster GROUP BY weekday ORDER BY weekday")
+    @Query("SELECT new de.tsearch.datava.database.postgres.data.WeekStatistics(extract (isodow from created_at) as weekday, COUNT(c)) FROM Clip c WHERE c.broadcaster = :broadcaster GROUP BY weekday ORDER BY weekday")
     List<WeekStatistics> calculateWeekStatistics(Broadcaster broadcaster);
 
     @Cacheable

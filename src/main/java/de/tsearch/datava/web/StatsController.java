@@ -1,13 +1,7 @@
 package de.tsearch.datava.web;
 
-import de.tsearch.datava.database.postgres.data.BoxStatistics;
-import de.tsearch.datava.database.postgres.data.ChartData;
-import de.tsearch.datava.database.postgres.data.DatasetData;
-import de.tsearch.datava.database.postgres.data.GameStatistics;
+import de.tsearch.datava.database.postgres.data.*;
 import de.tsearch.datava.database.postgres.entity.Broadcaster;
-import de.tsearch.datava.database.postgres.entity.HourStatistics;
-import de.tsearch.datava.database.postgres.entity.WeekStatistics;
-import de.tsearch.datava.database.postgres.entity.YearMonthStatistics;
 import de.tsearch.datava.database.postgres.repository.BroadcasterRepository;
 import de.tsearch.datava.database.postgres.repository.ClipStatisticRepository;
 import de.tsearch.datava.database.postgres.repository.HighlightRepository;
@@ -54,8 +48,7 @@ public class StatsController {
         if (broadcasterOptional.isPresent()) {
             Broadcaster broadcaster = broadcasterOptional.get();
             List<YearMonthStatistics> all = clipStatisticRepository.calculateYearMonthStatistics(broadcaster);
-            List<String> labels = extractDisplayLabels(all);
-            return ResponseEntity.ok(new ChartData<>(labels, List.of(new DatasetData<>("Highlights", all.stream().map(YearMonthStatistics::getCount).toList()))));
+            return ResponseEntity.ok(generateChart("Highlights", all));
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -67,15 +60,7 @@ public class StatsController {
         if (broadcasterOptional.isPresent()) {
             Broadcaster broadcaster = broadcasterOptional.get();
             List<WeekStatistics> weekStatistics = clipStatisticRepository.calculateWeekStatistics(broadcaster);
-
-            List<String> labels = new ArrayList<>(weekStatistics.size());
-            List<Long> data = new ArrayList<>(weekStatistics.size());
-            for (WeekStatistics weekStatistic : weekStatistics) {
-                labels.add(weekStatistic.getWeekday().name());
-                data.add(weekStatistic.getCount());
-            }
-
-            return ResponseEntity.ok(new ChartData<>(labels, List.of(new DatasetData<>("Clips", data))));
+            return ResponseEntity.ok(generateChart("Clips", weekStatistics));
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -87,8 +72,7 @@ public class StatsController {
         if (broadcasterOptional.isPresent()) {
             Broadcaster broadcaster = broadcasterOptional.get();
             List<YearMonthStatistics> all = clipStatisticRepository.calculateYearMonthStatistics(broadcaster);
-            List<String> labels = extractDisplayLabels(all);
-            return ResponseEntity.ok(new ChartData<>(labels, List.of(new DatasetData<>("Highlights", all.stream().map(YearMonthStatistics::getCount).toList()))));
+            return ResponseEntity.ok(generateChart("Highlights", all));
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -100,15 +84,7 @@ public class StatsController {
         if (broadcasterOptional.isPresent()) {
             Broadcaster broadcaster = broadcasterOptional.get();
             List<HourStatistics> hourStatistics = clipStatisticRepository.calculateHourStatistics(broadcaster);
-
-            List<String> labels = new ArrayList<>(hourStatistics.size());
-            List<Long> data = new ArrayList<>(hourStatistics.size());
-            for (HourStatistics hourStatistic : hourStatistics) {
-                labels.add(hourStatistic.getHour().toString());
-                data.add(hourStatistic.getCount());
-            }
-
-            return ResponseEntity.ok(new ChartData<>(labels, List.of(new DatasetData<>("Highlights", data))));
+            return ResponseEntity.ok(generateChart("Highlights", hourStatistics));
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -152,13 +128,14 @@ public class StatsController {
         }
     }
 
-    private List<String> extractDisplayLabels(List<YearMonthStatistics> statistics) {
-        ArrayList<String> labels = new ArrayList<>(statistics.size());
-        Calendar calendar = Calendar.getInstance();
-        for (YearMonthStatistics yearMonthStatistic : statistics) {
-            calendar.setTime(yearMonthStatistic.getYearMonth());
-            labels.add(calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.GERMAN) + " " + calendar.get(Calendar.YEAR));
+    private ChartData<Long> generateChart(String datasetName, List<? extends ChartStatistics> chartStatistics) {
+        List<String> labels = new ArrayList<>(chartStatistics.size());
+        List<Long> data = new ArrayList<>(chartStatistics.size());
+        for (ChartStatistics chartStatistic : chartStatistics) {
+            labels.add(chartStatistic.getLabel());
+            data.add(chartStatistic.getCount());
         }
-        return labels;
+
+        return new ChartData<>(labels, List.of(new DatasetData<>(datasetName, data)));
     }
 }

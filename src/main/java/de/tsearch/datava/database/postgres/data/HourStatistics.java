@@ -1,9 +1,12 @@
 package de.tsearch.datava.database.postgres.data;
 
-public record GameStatistics(String name, long count) implements ChartStatistics {
+import lombok.Getter;
+import lombok.ToString;
+
+public record HourStatistics(Integer hour, long count) implements ChartStatistics{
     @Override
     public String getLabel() {
-        return name;
+        return hour.toString();
     }
 
     @Override
