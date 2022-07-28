@@ -5,6 +5,7 @@ import de.tsearch.datava.database.postgres.entity.Broadcaster;
 import de.tsearch.datava.database.postgres.repository.BroadcasterRepository;
 import de.tsearch.datava.database.postgres.repository.ClipStatisticRepository;
 import de.tsearch.datava.database.postgres.repository.HighlightRepository;
+import de.tsearch.datava.database.postgres.repository.HighlightStatisticRepository;
 import de.tsearch.datava.web.entity.WebStatistics;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheConfig;
@@ -24,6 +25,7 @@ public class StatsController {
 
     private final BroadcasterRepository broadcasterRepository;
     private final ClipStatisticRepository clipStatisticRepository;
+    private final HighlightStatisticRepository highlightStatisticRepository;
     private final HighlightRepository highlightRepository;
 
     @GetMapping("{creator}")
@@ -35,18 +37,18 @@ public class StatsController {
 
         //Box Statistics
         BoxStatistics boxStatistics = new BoxStatistics(
-                highlightRepository.countByBroadcaster(broadcaster),
-                highlightRepository.countByBroadcasterLast30Days(broadcaster),
+                highlightStatisticRepository.countByBroadcaster(broadcaster),
+                highlightStatisticRepository.countByBroadcasterLast30Days(broadcaster),
                 clipStatisticRepository.countByBroadcaster(broadcaster),
                 clipStatisticRepository.countByBroadcasterLast30Days(broadcaster),
                 clipStatisticRepository.calculateGames(broadcaster).size()
         );
 
         //Highlights per Month
-        List<YearMonthStatistics> highlightYearMonthStatistics = clipStatisticRepository.calculateYearMonthStatistics(broadcaster);
+        List<YearMonthStatistics> highlightYearMonthStatistics = highlightStatisticRepository.calculateYearMonthStatistics(broadcaster);
         ChartData<Long> highlightsPerMonth = generateChart("Highlights", highlightYearMonthStatistics);
         //Highlights per Weekday
-        List<WeekStatistics> weekStatistics = clipStatisticRepository.calculateWeekStatistics(broadcaster);
+        List<WeekStatistics> weekStatistics = highlightStatisticRepository.calculateWeekStatistics(broadcaster);
         ChartData<Long> highlightsPerWeekday = generateChart("Clips", weekStatistics);
 
         //Clips per Month

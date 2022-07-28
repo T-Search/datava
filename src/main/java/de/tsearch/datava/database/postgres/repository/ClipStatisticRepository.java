@@ -31,6 +31,6 @@ public interface ClipStatisticRepository extends CrudRepository<Clip, String> {
     @Query("SELECT new de.tsearch.datava.database.postgres.data.WeekStatistics(extract (isodow from created_at) as weekday, COUNT(c)) FROM Clip c WHERE c.broadcaster = :broadcaster GROUP BY weekday ORDER BY weekday")
     List<WeekStatistics> calculateWeekStatistics(Broadcaster broadcaster);
 
-    @Query(nativeQuery = true, name = "YearMonthStatistics.calculateBroadcaster")
+    @Query(nativeQuery = true, name = "ClipYearMonthStatistics.calculateBroadcaster")
     List<YearMonthStatistics> calculateYearMonthStatistics(Broadcaster broadcaster);
 }
