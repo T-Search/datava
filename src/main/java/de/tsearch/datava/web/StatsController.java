@@ -30,7 +30,7 @@ public class StatsController {
     private ResponseEntity<WebStatistics> creatorStatistics(@PathVariable String creator) {
         Optional<Broadcaster> broadcasterOptional = broadcasterRepository.findByDisplayNameIgnoreCase(creator);
 
-        if (broadcasterOptional.isEmpty()) ResponseEntity.notFound().build();
+        if (broadcasterOptional.isEmpty()) return ResponseEntity.notFound().build();
         Broadcaster broadcaster = broadcasterOptional.get();
 
         //Box Statistics
