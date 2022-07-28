@@ -14,7 +14,6 @@ import java.util.List;
 
 @CacheConfig(cacheNames = "clipStatistic")
 public interface ClipStatisticRepository extends CrudRepository<Clip, String> {
-
     Long countByBroadcaster(Broadcaster broadcaster);
 
     @Query(value = "SELECT count(id) FROM clip WHERE broadcaster_id = :broadcaster  AND created_at > (current_date - interval '30 days')", nativeQuery = true)
@@ -26,29 +25,12 @@ public interface ClipStatisticRepository extends CrudRepository<Clip, String> {
     @Query("SELECT new de.tsearch.datava.database.postgres.data.GameStatistics(game, count(id) as co) FROM Clip c where broadcaster = :broadcaster GROUP BY game ORDER BY co desc, game")
     List<GameStatistics> calculateGameStatistics(Broadcaster broadcaster);
 
-
-
-    @Cacheable
-    @Query("SELECT new de.tsearch.datava.database.postgres.data.HourStatistics(extract (hour from created_at) as hour, COUNT(c)) FROM Clip c GROUP BY hour ORDER BY hour")
-    List<HourStatistics> calculateHourStatistics();
-
-    @Cacheable(key = "#broadcaster.id")
     @Query("SELECT new de.tsearch.datava.database.postgres.data.HourStatistics(extract (hour from created_at) as hour, COUNT(c)) FROM Clip c WHERE c.broadcaster = :broadcaster GROUP BY hour ORDER BY hour")
     List<HourStatistics> calculateHourStatistics(Broadcaster broadcaster);
 
-    @Cacheable
-    @Query("SELECT new de.tsearch.datava.database.postgres.data.WeekStatistics(extract (isodow from created_at) as weekday, COUNT(c)) FROM Clip c GROUP BY weekday ORDER BY weekday")
-    List<WeekStatistics> calculateWeekStatistics();
-
-    @Cacheable(key = "#broadcaster.id")
     @Query("SELECT new de.tsearch.datava.database.postgres.data.WeekStatistics(extract (isodow from created_at) as weekday, COUNT(c)) FROM Clip c WHERE c.broadcaster = :broadcaster GROUP BY weekday ORDER BY weekday")
     List<WeekStatistics> calculateWeekStatistics(Broadcaster broadcaster);
 
-    @Cacheable
-    @Query(nativeQuery = true, name = "YearMonthStatistics.calculateAll")
-    List<YearMonthStatistics> calculateYearMonthStatistics();
-
-    @Cacheable(key = "#broadcaster.id")
     @Query(nativeQuery = true, name = "YearMonthStatistics.calculateBroadcaster")
     List<YearMonthStatistics> calculateYearMonthStatistics(Broadcaster broadcaster);
 }

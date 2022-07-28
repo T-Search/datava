@@ -1,0 +1,20 @@
+package de.tsearch.datava.web.entity;
+
+import de.tsearch.datava.database.postgres.data.BoxStatistics;
+import de.tsearch.datava.database.postgres.data.ChartData;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public class WebStatistics {
+    private BoxStatistics boxStatistics;
+
+    private ChartData<Long> highlightsPerMonth;
+    private ChartData<Long> highlightsPerWeekday;
+
+    private ChartData<Long> clipsPerMonth;
+    private ChartData<Long> clipsPerHour;
+
+    private ChartData<Long> clipsPerGame;
+}
