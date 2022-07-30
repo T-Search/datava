@@ -5,6 +5,8 @@ import de.tsearch.datava.database.postgres.data.ChartData;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.time.Instant;
+
 @Getter
 @AllArgsConstructor
 public class WebStatistics {
@@ -17,4 +19,6 @@ public class WebStatistics {
     private ChartData<Long> clipsPerHour;
 
     private ChartData<Long> clipsPerGame;
+
+    private Instant calculatedAt;
 }

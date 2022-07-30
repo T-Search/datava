@@ -4,32 +4,36 @@ import de.tsearch.datava.database.postgres.data.*;
 import de.tsearch.datava.database.postgres.entity.Broadcaster;
 import de.tsearch.datava.database.postgres.repository.BroadcasterRepository;
 import de.tsearch.datava.database.postgres.repository.ClipStatisticRepository;
-import de.tsearch.datava.database.postgres.repository.HighlightRepository;
 import de.tsearch.datava.database.postgres.repository.HighlightStatisticRepository;
 import de.tsearch.datava.web.entity.WebStatistics;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.*;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
-@CacheConfig(cacheNames = "test")
+@CacheConfig(cacheNames = "statistic")
 @RequestMapping("stats")
 public class StatsController {
 
     private final BroadcasterRepository broadcasterRepository;
     private final ClipStatisticRepository clipStatisticRepository;
     private final HighlightStatisticRepository highlightStatisticRepository;
-    private final HighlightRepository highlightRepository;
 
+    @Cacheable
     @GetMapping("{creator}")
-    private ResponseEntity<WebStatistics> creatorStatistics(@PathVariable String creator) {
+    public ResponseEntity<WebStatistics> creatorStatistics(@PathVariable String creator) {
+        Instant calculatedAt = Instant.now();
         Optional<Broadcaster> broadcasterOptional = broadcasterRepository.findByDisplayNameIgnoreCase(creator);
 
         if (broadcasterOptional.isEmpty()) return ResponseEntity.notFound().build();
@@ -92,7 +96,8 @@ public class StatsController {
                 highlightsPerWeekday,
                 clipsPerMonth,
                 clipsPerHour,
-                clipsPerGame
+                clipsPerGame,
+                calculatedAt
         ));
     }
 

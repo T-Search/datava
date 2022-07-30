@@ -6,5 +6,5 @@ spring.jpa.show-sql=false
 spring.jpa.generate-ddl=true
 spring.jpa.hibernate.ddl-auto=validate
 
-spring.cache.cache-names=broadcasterAutocomplete,clipSearch,highlightSearch
+spring.cache.cache-names=broadcasterAutocomplete,clipSearch,highlightSearch,statistic
 spring.cache.caffeine.spec=maximumSize=500,expireAfterWrite=3m
