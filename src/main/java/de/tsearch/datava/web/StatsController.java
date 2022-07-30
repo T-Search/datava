@@ -57,10 +57,10 @@ public class StatsController {
 
         //Clips per Month
         List<YearMonthStatistics> clipYearMonthStatistics = clipStatisticRepository.calculateYearMonthStatistics(broadcaster);
-        ChartData<Long> clipsPerMonth = generateChart("Highlights", clipYearMonthStatistics);
+        ChartData<Long> clipsPerMonth = generateChart("Clips", clipYearMonthStatistics);
         //Clips per Hour
         List<HourStatistics> hourStatistics = clipStatisticRepository.calculateHourStatistics(broadcaster);
-        ChartData<Long> clipsPerHour = generateChart("Highlights", hourStatistics);
+        ChartData<Long> clipsPerHour = generateChart("Clips", hourStatistics);
         //Clips per Game
         List<GameStatistics> gameStatistics = clipStatisticRepository.calculateGameStatistics(broadcaster);
         List<String> labels = new ArrayList<>(Math.min(gameStatistics.size(), 10));
