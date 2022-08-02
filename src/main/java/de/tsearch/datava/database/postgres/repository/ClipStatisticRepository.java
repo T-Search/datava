@@ -1,9 +1,6 @@
 package de.tsearch.datava.database.postgres.repository;
 
-import de.tsearch.datava.database.postgres.data.GameStatistics;
-import de.tsearch.datava.database.postgres.data.HourStatistics;
-import de.tsearch.datava.database.postgres.data.WeekStatistics;
-import de.tsearch.datava.database.postgres.data.YearMonthStatistics;
+import de.tsearch.datava.database.postgres.data.*;
 import de.tsearch.datava.database.postgres.entity.*;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
@@ -21,6 +18,12 @@ public interface ClipStatisticRepository extends CrudRepository<Clip, String> {
 
     @Query(value = "SELECT DISTINCT game FROM Clip WHERE broadcaster = :broadcaster AND game is not null")
     List<String> calculateGames(Broadcaster broadcaster);
+
+    @Query("SELECT new de.tsearch.datava.database.postgres.data.ClipperData(creatorName, count(id) as co) FROM Clip c where broadcaster = :broadcaster GROUP BY creator_name ORDER BY co desc")
+    List<ClipperData> calculateClipperByCount(Broadcaster broadcaster);
+
+    @Query("SELECT new de.tsearch.datava.database.postgres.data.ClipperData(creatorName, sum(viewCount) as co) FROM Clip c where broadcaster = :broadcaster GROUP BY creator_name ORDER BY co desc")
+    List<ClipperData> calculateClipperByViews(Broadcaster broadcaster);
 
     @Query("SELECT new de.tsearch.datava.database.postgres.data.GameStatistics(game, count(id) as co) FROM Clip c where broadcaster = :broadcaster GROUP BY game ORDER BY co desc, game")
     List<GameStatistics> calculateGameStatistics(Broadcaster broadcaster);

@@ -20,5 +20,8 @@ public class WebStatistics {
 
     private ChartData<Long> clipsPerGame;
 
+    private ChartData<Long> clipperPerCount;
+    private ChartData<Long> clipperPerViews;
+
     private Instant calculatedAt;
 }

@@ -63,32 +63,15 @@ public class StatsController {
         ChartData<Long> clipsPerHour = generateChart("Clips", hourStatistics);
         //Clips per Game
         List<GameStatistics> gameStatistics = clipStatisticRepository.calculateGameStatistics(broadcaster);
-        List<String> labels = new ArrayList<>(Math.min(gameStatistics.size(), 10));
-        List<Long> data = new ArrayList<>(Math.min(gameStatistics.size(), 10));
+        ChartData<Long> clipsPerGame = combineChartData("Spiele", gameStatistics, 10);
 
-        String combinedName;
-        long combinedCount = 0L;
-        for (GameStatistics gameStatistic : gameStatistics) {
-            //Add only the first 9 Games with name or all games if size is equals to 10
-            if(labels.size() <= 9 || gameStatistics.size() == 10) {
-                if (gameStatistic.name() == null) {
-                    labels.add("Unbekannt");
-                } else {
-                    labels.add(gameStatistic.name());
-                }
-                data.add(gameStatistic.count());
-            } else {
-                //Compute combined count
-                combinedCount += gameStatistic.count();
-            }
-        }
-        if (combinedCount > 0) {
-            combinedName = (gameStatistics.size() - labels.size()) + " andere Spiele";
-            labels.add(combinedName);
-            data.add(combinedCount);
-        }
+        //Clipper by Count
+        List<ClipperData> clipperDataByCount = clipStatisticRepository.calculateClipperByCount(broadcaster);
+        ChartData<Long> clipperByCount = combineChartData("Clipper", clipperDataByCount, 10);
 
-        ChartData<Long> clipsPerGame = new ChartData<>(labels, List.of(new DatasetData<>("Spiele", data)));
+        //Clipper by Views
+        List<ClipperData> clipperDataByViews = clipStatisticRepository.calculateClipperByViews(broadcaster);
+        ChartData<Long> clipperByViews = combineChartData("Clipper", clipperDataByViews, 10);
 
         return ResponseEntity.ok(new WebStatistics(
                 boxStatistics,
@@ -97,6 +80,8 @@ public class StatsController {
                 clipsPerMonth,
                 clipsPerHour,
                 clipsPerGame,
+                clipperByCount,
+                clipperByViews,
                 calculatedAt
         ));
     }
@@ -107,6 +92,34 @@ public class StatsController {
         for (ChartStatistics chartStatistic : chartStatistics) {
             labels.add(chartStatistic.getLabel());
             data.add(chartStatistic.getCount());
+        }
+
+        return new ChartData<>(labels, List.of(new DatasetData<>(datasetName, data)));
+    }
+
+    private ChartData<Long> combineChartData(String datasetName, List<? extends ChartStatistics> chartStatistics, int cutAfter) {
+        List<String> labels = new ArrayList<>(Math.min(chartStatistics.size(), cutAfter));
+        List<Long> data = new ArrayList<>(Math.min(chartStatistics.size(), cutAfter));
+
+        String combinedName;
+        long combinedCount = 0L;
+        for (ChartStatistics chartStatistic : chartStatistics) {
+            if(labels.size() <= (cutAfter - 1) || chartStatistics.size() == cutAfter) {
+                if (chartStatistic.getLabel() == null || chartStatistic.getLabel().isBlank()) {
+                    labels.add("Unbekannt");
+                } else {
+                    labels.add(chartStatistic.getLabel());
+                }
+                data.add(chartStatistic.getCount());
+            } else {
+                //Compute combined count
+                combinedCount += chartStatistic.getCount();
+            }
+        }
+        if (combinedCount > 0) {
+            combinedName = (chartStatistics.size() - labels.size()) + " andere " + datasetName;
+            labels.add(combinedName);
+            data.add(combinedCount);
         }
 
         return new ChartData<>(labels, List.of(new DatasetData<>(datasetName, data)));
