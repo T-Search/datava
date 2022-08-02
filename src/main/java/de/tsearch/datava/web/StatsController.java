@@ -53,7 +53,7 @@ public class StatsController {
         ChartData<Long> highlightsPerMonth = generateChart("Highlights", highlightYearMonthStatistics);
         //Highlights per Weekday
         List<WeekStatistics> weekStatistics = highlightStatisticRepository.calculateWeekStatistics(broadcaster);
-        ChartData<Long> highlightsPerWeekday = generateChart("Clips", weekStatistics);
+        ChartData<Long> highlightsPerWeekday = generateChart("Highlights", weekStatistics);
 
         //Clips per Month
         List<YearMonthStatistics> clipYearMonthStatistics = clipStatisticRepository.calculateYearMonthStatistics(broadcaster);
