@@ -102,7 +102,7 @@ public class StatsController {
         String combinedName;
         long combinedCount = 0L;
         for (ChartStatistics chartStatistic : chartStatistics) {
-            if(labels.size() <= (cutAfter - 1) || chartStatistics.size() == cutAfter) {
+            if(labels.size() < (cutAfter - 1) || chartStatistics.size() == cutAfter) {
                 if (chartStatistic.getLabel() == null || chartStatistic.getLabel().isBlank()) {
                     labels.add("Unbekannt");
                 } else {
