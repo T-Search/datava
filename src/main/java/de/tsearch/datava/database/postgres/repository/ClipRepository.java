@@ -7,6 +7,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 
 public interface ClipRepository extends CrudRepository<Clip, String> {
-    Page<Clip> findAllByTitleContainingIgnoreCaseAndBroadcaster(String title, Broadcaster broadcaster, Pageable pageable);
-    Page<Clip> findAllByBroadcaster(Broadcaster broadcaster, Pageable pageable);
+    Page<Clip> findAllByTitleContainingIgnoreCaseAndBroadcasterAndGameContainingIgnoreCaseAndCreatorNameContainingIgnoreCaseAndViewCountGreaterThanEqual(String title, Broadcaster broadcaster, String game, String creator, long views, Pageable pageable);
+
+    Page<Clip> findAllByTitleContainingIgnoreCaseAndBroadcasterAndGameContainingIgnoreCaseAndCreatorNameContainingIgnoreCaseAndViewCountLessThanEqual(String title, Broadcaster broadcaster, String game, String creator, long views, Pageable pageable);
+
+    Page<Clip> findAllByBroadcasterAndGameContainingIgnoreCaseAndCreatorNameContainingIgnoreCaseAndViewCountGreaterThanEqual(Broadcaster broadcaster, String game, String creator, long views, Pageable pageable);
+
+    Page<Clip> findAllByBroadcasterAndGameContainingIgnoreCaseAndCreatorNameContainingIgnoreCaseAndViewCountLessThanEqual(Broadcaster broadcaster, String game, String creator, long views, Pageable pageable);
 }

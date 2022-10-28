@@ -9,7 +9,6 @@ import de.tsearch.datava.web.entity.WebPage;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,10 +20,13 @@ import java.util.stream.Collectors;
 @CrossOrigin(methods = {RequestMethod.POST, RequestMethod.PUT, RequestMethod.GET, RequestMethod.DELETE}, origins = {"*"})
 public class HighlightController {
 
+    private final ControllerUtil controllerUtil;
+
     private final HighlightRepository highlightRepository;
     private final BroadcasterRepository broadcasterRepository;
 
-    public HighlightController(HighlightRepository highlightRepository, BroadcasterRepository broadcasterRepository) {
+    public HighlightController(ControllerUtil controllerUtil, HighlightRepository highlightRepository, BroadcasterRepository broadcasterRepository) {
+        this.controllerUtil = controllerUtil;
         this.highlightRepository = highlightRepository;
         this.broadcasterRepository = broadcasterRepository;
     }
@@ -35,17 +37,35 @@ public class HighlightController {
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(defaultValue = "") String q,
-            @RequestParam(name = "broadcaster") String broadcasterName
+            @RequestParam(name = "broadcaster") String broadcasterName,
+            @RequestParam(name = "sortOrder", defaultValue = "desc") String sortOrder,
+            @RequestParam(name = "sortProperty", defaultValue = "views") String sortProperty,
+            @RequestParam(name = "views", defaultValue = "0") long views,
+            @RequestParam(name = "viewsOperator", defaultValue = ">=") String viewOperator
     ) {
         Optional<Broadcaster> broadcasterOptional = broadcasterRepository.findByDisplayNameIgnoreCase(broadcasterName);
 
         if (broadcasterOptional.isPresent()) {
             Page<Highlight> highlightPage;
-            PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, Sort.by("viewCount").descending());
+
+            PageRequest pageRequest = controllerUtil.buildPageRequest(pageNumber, pageSize, sortProperty, sortOrder);
+
             if (q.length() == 0) {
-                highlightPage = highlightRepository.findAllByBroadcaster(broadcasterOptional.get(), pageRequest);
+                if (">=".equals(viewOperator)) {
+                    highlightPage = highlightRepository.findAllByBroadcasterAndViewCountGreaterThanEqual(broadcasterOptional.get(), views, pageRequest);
+                } else if ("<=".equals(viewOperator)) {
+                    highlightPage = highlightRepository.findAllByBroadcasterAndViewCountLessThanEqual(broadcasterOptional.get(), views, pageRequest);
+                } else {
+                    return ResponseEntity.badRequest().build();
+                }
             } else {
-                highlightPage = highlightRepository.findAllByTitleContainingIgnoreCaseAndBroadcaster(q, broadcasterOptional.get(), pageRequest);
+                if (">=".equals(viewOperator)) {
+                    highlightPage = highlightRepository.findAllByTitleContainingIgnoreCaseAndBroadcasterAndViewCountGreaterThanEqual(q, broadcasterOptional.get(), views, pageRequest);
+                } else if ("<=".equals(viewOperator)) {
+                    highlightPage = highlightRepository.findAllByTitleContainingIgnoreCaseAndBroadcasterAndViewCountLessThanEqual(q, broadcasterOptional.get(), views, pageRequest);
+                } else {
+                    return ResponseEntity.badRequest().build();
+                }
             }
             WebPage<WebHighlight> page = new WebPage<>();
             page.setContent(highlightPage.getContent().stream().map(WebHighlight::new).collect(Collectors.toList()));
